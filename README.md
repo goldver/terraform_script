@@ -1,36 +1,34 @@
-Terraform basic scripts for AWS infrastructure management: EC2s, Load Balancer, Auto Scaling group, Route53 Record 
+Terraform basic scripts for AWS infrastructure management: EC2s, Load Balancer, Autoscaling group, Route53 records 
 ==================
 
 Attributes
 ==================
-# Secure params ######################
-variable "access_key" 					{ default = "xxxxxxxxxxxxxxxxx" } # Access key from AMS >> AIM 
-variable "secret_key" 					{ default = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" } # Secret key from AMS >> AIM 
 
-# Image - AMI ########################
-variable "ami" 							{ default = "ami-xxxxxxxx" } # Image ID > AMIs
+| Key | Type | Description | Default |
+| --- | ---- | ----------- | ------- |
+| ['access_key'] | String | Access key from AMS >> AIM  | 'xxxxxxxxxxxxxxxxx' |
+| ['secret_key'] | String | Secret key from AMS >> AIM | 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' |
 
-# Route53 params #####################
-variable "record_zone_id"  				{ default = "xxxxxxxxxxxxxx" } # Zone ID from route53 >> gett.com
-variable "record_name"  				{ default = "test" } # Url >> for example: https://test.com
-variable "record_type"  				{ default = "CNAME" } # Record type
+| ['ami'] | String | Image ID > AMIs | 'ami-xxxxxxxx' |
 
-# Auto Scaling group #################
-variable "lc_name"  				    { default = "7a87f209" } # Set hash of AMI >> variable ami
-variable "min_elb_capacity"             { default = "0" } # Minimum capacity of load balancer
-variable "max_size"                     { default = "5" } # Max number of instances
-variable "min_size"                     { default = "2" } # Min number of instances
-variable "desired_capacity"				{ default = "2" } # Desired number of instances
+| ['record_zone_id'] | String | Zone ID from route53 >> example.com | 'xxxxxxxxxxxxxx' |
+| ['record_name'] | String | Url >> for example: https://test.com | 'test' |
+| ['record_type'] | String | Record type | CNAME |
 
-# Instance params ####################
-variable "aws_instance" 				{ default = "test" } # Name of future instance
-variable "instance_type" 				{ default = "c3.large" } # Instance of future type
-variable "key_name" 					{ default = "xxxxxxxxxx" } # Key for instance creation
-variable "iam_instance_profile" 		{ default = "s3_chef_reader" } # Chef reader to run a Chef provisioning
-variable "user_data" 					{ default = "user-data" } # user data for inializing instance
+| ['lc_name'] | String | Set hash of AMI >> variable ami | '7a87f209' |
+| ['min_elb_capacity'] | String | Minimum capacity of load balancer | '0' |
+| ['max_size'] | String | Max number of instances | '5' |
+| ['min_size'] | String | Min number of instances | '2' |
+| ['desired_capacity'] | String | Desired number of instances | '2' |
 
-#variable "instance_1" 					{ default = "i-xxxxxxxx"} # To add a specific instance
-variable "count" 						{ default = "2" } # How many instances to create
+| ['aws_instance'] | String | Name of future instance | 'test' |
+| ['instance_type'] | String | Instance type | 'c3.large' |
+| ['key_name'] | String | Key for instance creation | 'xxxxxxxxxx' |
+| ['iam_instance_profile'] | String | Chef reader to run a Chef provisioning | 's3_chef_reader' |
+| ['user_data'] | String | User data for inializing instance | 'user-data' |
+
+| ['instance_1'] | String | To add a specific instance | 'i-xxxxxxxx' |
+| ['count'] | String | How many instances to create | '2' |
 
 Usage
 ==================
