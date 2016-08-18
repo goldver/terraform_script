@@ -1,0 +1,115 @@
+Content-Type: multipart/mixed; boundary="===============xxxxxxxxxxxxxxxxxxxxxxxxxxx=="
+MIME-Version: 1.0
+
+--===============xxxxxxxxxxxxxxxxxxxxxxxxxxx==
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="cloud-config"
+
+package_update: true
+package_upgrade: true
+manage-resolv-conf: true
+resolv_conf:
+  searchdomains:
+    - example.com
+    - example.com
+  domain: example.com
+runcmd:
+  - "apt-get update"
+  - "curl -L https://www.opscode.com/chef/install.sh | sudo bash -s -- -v 11.16.4"
+output: { all: '|tee -a /var/log/cloud-init-output.log' }
+
+# rsyslog:
+#   - "*.* @@logger.example.com"
+# power_state:
+#   delay: 30
+#   mode: reboot
+# - "curl -L https://www.opscode.com/chef/install.sh | bash"
+--===============xxxxxxxxxxxxxxxxxxxxxxxxxxx==
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="zz_bootstrap.rb"
+
+#!/opt/chef/embedded/bin/ruby
+require "net/https"
+require "openssl"
+require "base64"
+require "json"
+
+REAL_CHEF_SERVER = 'chef-eu-west-1.example.com'
+CHEF_SERVER = 'chef.example.com'
+
+def s3_get(endpoint, bucket, path)
+  timestamp = Time.new.utc.asctime
+  role = Net::HTTP.get("169.254.xxx.xxx", "/latest/meta-data/iam/security-credentials/")
+  creds = JSON.load Net::HTTP.get("169.254.xxx.xxx", "/latest/meta-data/iam/security-credentials/#{role}")
+
+  signature = Base64.encode64 \
+    OpenSSL::HMAC.digest(
+      'SHA1', creds['SecretAccessKey'],
+      "GET\n\n\n#{timestamp}\nx-amz-security-token:#{creds['Token']}\n/#{bucket}/#{path}")
+
+  req = Net::HTTP::Get.new("/#{bucket}/#{path}")
+  req['Date'] = timestamp
+  req['x-amz-security-token'] = creds['Token']
+  req['Authorization'] = "AWS #{creds['AccessKeyId']}:#{signature.chomp}"
+  http = Net::HTTP.new(endpoint, 443)
+  http.use_ssl = true
+  return http.request(req).body
+end
+
+def write_to_file(filename, content)
+  destination_dir = File.dirname filename
+  Dir.mkdir(destination_dir) unless File.exists? destination_dir
+  File.open(filename, 'w') do |dest_file|
+    dest_file.write content
+  end
+end
+
+#
+# get chef validator secret key from s3
+#
+write_to_file "/etc/chef/validation.pem", s3_get("s3-eu-west-1.amazonaws.com", "secret.example.com", "chef-validator.pem")
+
+#
+# write mini configuration for chef servers
+#
+write_to_file "/etc/chef/client.rb", <<-EOF
+chef_server_url        "https://#{CHEF_SERVER}/"
+validation_client_name "chef-validator"
+environment "production"
+EOF
+
+require 'socket'
+chef_server_ip = Socket.getaddrinfo(REAL_CHEF_SERVER, 'https')[0][2]
+
+#
+# set local hostname and domain for the server
+#
+instance_id = "test" + Net::HTTP.get("169.254.xxx.xxx", "/latest/meta-data/instance-id")
+write_to_file "/etc/hosts", <<-EOF
+127.0.0.1 localhost
+127.0.1.1 #{instance_id}.example.com #{instance_id}
+
+#{chef_server_ip} #{CHEF_SERVER} chef
+
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+EOF
+write_to_file "/etc/hostname", instance_id
+system "hostname #{instance_id}"
+
+#
+# install and execute chef
+#
+#system "chef-client -o'role[base]'"
+#system "chef-client -r'role[sysadmin_users]' -L /tmp/chef.log -l info"
+
+--===============xxxxxxxxxxxxxxxxxxxxxxxx==--

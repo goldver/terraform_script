@@ -1,8 +1,3 @@
-Terraform basic scripts for AWS infrastructure menagemenet: EC2s, Load Balancer, Auto Scaling group, Route53 Record 
-==================
-
-Attributes
-==================
 # Secure params ######################
 variable "access_key" 					{ default = "xxxxxxxxxxxxxxxxx" } # Access key from AMS >> AIM 
 variable "secret_key" 					{ default = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" } # Secret key from AMS >> AIM 
@@ -31,27 +26,3 @@ variable "user_data" 					{ default = "user-data" } # user data for inializing i
 
 #variable "instance_1" 					{ default = "i-xxxxxxxx"} # To add a specific instance
 variable "count" 						{ default = "2" } # How many instances to create
-
-Usage
-==================
-Just include these scripts under separate directory and run:
-
-    terraform plan
-    terraform apply
-	
-Contributing
-------------
-1. Fork the repository on Github
-2. Create a named feature branch (like `add_component_x`)
-3. Write you change
-4. Write tests for your change (if applicable)
-5. Run the tests, ensuring they all pass
-6. Submit a Pull Request using Github
-
-License and Authors
--------------------
-Authors: Michael Vershinin
-
-Support
--------------------
-goldver@gmail.com
