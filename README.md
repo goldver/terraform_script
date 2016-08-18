@@ -1,4 +1,4 @@
-Terraform basic scripts for AWS infrastructure menagemenet: EC2s, Load Balancer, Auto Scaling group, Route53 Record 
+Terraform basic scripts for AWS infrastructure management: EC2s, Load Balancer, Auto Scaling group, Route53 Record 
 ==================
 
 Attributes
